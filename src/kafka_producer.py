@@ -1,8 +1,8 @@
 from aiokafka import AIOKafkaProducer
-import asyncio
 
+from src.conf import KAFKA_BROKERCONNECT
 
-producer = AIOKafkaProducer(bootstrap_servers='kafka:9092')
+producer = AIOKafkaProducer(bootstrap_servers=KAFKA_BROKERCONNECT)
 
 async def send_message(topic_name: str, message: str) -> None:
     """Отправка сообщения в топик Kafka"""
