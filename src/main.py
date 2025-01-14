@@ -8,10 +8,10 @@ from src.conf.settings import async_session
 from src.conf.producer import send_message, producer
 
 
-
 app = FastAPI()
 
-@app.on_event('startup')
+
+@app.on_event("startup")
 async def startup_event():
     """Событие при старта приложении"""
     try:
@@ -22,10 +22,12 @@ async def startup_event():
         await asyncio.sleep(5)
         await startup_event()
 
-@app.on_event('shutdown')
+
+@app.on_event("shutdown")
 async def shotdown_event():
     """Событие при завершении приложения"""
     await producer.close()
+
 
 @app.middleware("http")
 async def database_session_context_middleware(
@@ -37,9 +39,7 @@ async def database_session_context_middleware(
         return await call_next(request)
 
 
-@app.get('/')
+@app.get("/")
 async def main():
     await send_message("test", b"test message")
-    return {
-        'message': "testKafka"
-    }
+    return {"message": "testKafka"}
