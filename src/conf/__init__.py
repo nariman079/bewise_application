@@ -1,6 +1,9 @@
-from src.conf.settings import KAFKA_BROKERCONNECT 
+from src.conf.settings import KAFKA_BROKERCONNECT, DB_URL
+from src.conf.database import Base
 
 __all__ = [
-    'KAFKA_BROKERCONNECT'
+    'KAFKA_BROKERCONNECT',
+    'Base',
+    'DB_URL'
 ]
 
