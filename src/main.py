@@ -13,11 +13,12 @@ app = FastAPI()
 
 @app.on_event("startup")
 async def startup_event():
-    """Событие при старта приложении"""
+    """Событие при старте приложении"""
     try:
         await producer.start()
     except Exception as e:
         print(f"Ошибка при запуске продюсера: {e}")
+
         # Попытка переподключения
         await asyncio.sleep(5)
         await startup_event()
