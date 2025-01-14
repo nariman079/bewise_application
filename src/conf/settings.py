@@ -1,5 +1,6 @@
 from os import getenv
 from dotenv import load_dotenv
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 load_dotenv(override=True)
 
@@ -21,6 +22,16 @@ ZOOKEEPER_TICK_TIME = getenv("ZOOKEEPER_TICK_TIME")
 KAFKA_BROKER_ID = getenv("KAFKA_BROKER_ID")
 KAFKA_ZOOKEEPER_CONNECT = getenv("KAFKA_ZOOKEEPER_CONNECT")
 KAFKA_ADVERTISED_LISTENERS = getenv("KAFKA_ADVERTISED_LISTENERS")
-KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR = getenv("KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR")
+KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR = getenv(
+    "KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR"
+)
 KAFKA_BROKERCONNECT = getenv("KAFKA_BROKERCONNECT")
 
+
+engine = create_async_engine(
+    DB_URL,
+    pool_recycle=280,
+    echo=True,
+)
+
+async_session = async_sessionmaker(bind=engine, expire_on_commit=False)

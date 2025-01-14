@@ -4,11 +4,12 @@ from collections.abc import Sequence
 from contextvars import ContextVar
 from typing import Any, Self
 
-from sqlalchemy import MetaData, Row, Select, func, select
-from sqlalchemy.ext.asyncio import AsyncAttrs, AsyncSession
+from sqlalchemy import MetaData, Select, select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import DeclarativeBase
 
 session_context: ContextVar[AsyncSession | None] = ContextVar("session", default=None)
+
 
 class DBController:
     @property
@@ -28,7 +29,9 @@ class DBController:
     ) -> Sequence[Any]:
         return await self.get_all(stmt.offset(offset).limit(limit))
 
+
 db: DBController = DBController()
+
 
 class MappingBase:
     @classmethod
@@ -54,12 +57,13 @@ class MappingBase:
         await db.session.delete(self)
         await db.session.flush()
 
+
 convention = {
-    "ix": "ix_%(column_0_label)s",  
-    "uq": "uq_%(table_name)s_%(column_0_name)s", 
-    "ck": "ck_%(table_name)s_%(constraint_name)s", 
+    "ix": "ix_%(column_0_label)s",
+    "uq": "uq_%(table_name)s_%(column_0_name)s",
+    "ck": "ck_%(table_name)s_%(constraint_name)s",
     "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",  # noqa: WPS323
-    "pk": "pk_%(table_name)s", 
+    "pk": "pk_%(table_name)s",
 }
 
 db_meta = MetaData(naming_convention=convention)
