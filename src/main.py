@@ -1,11 +1,23 @@
 import asyncio
 from typing import Callable, Awaitable
-
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, Response
 
 from src.conf.database import session_context
-from src.conf.settings import async_session
+from src.conf.settings import async_session, DEBUG
 from src.conf.producer import send_message, producer
+
+
+@asynccontextmanager
+async def lifespan():
+    """ЖЦ приложения""" 
+    if DEBUG:
+        # reinit database
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.drop_all)
+            await conn.run_sync(Base.metadata.create_all)
+
+    yield
 
 
 app = FastAPI()
@@ -44,3 +56,8 @@ async def database_session_context_middleware(
 async def main():
     await send_message("test", b"test message")
     return {"message": "testKafka"}
+
+
+@app.get('/api/applications')
+async def get_applications():
+    pass
