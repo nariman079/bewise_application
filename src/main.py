@@ -59,10 +59,16 @@ async def create_application(
     application: Annotated[ApplicationCreateSchema, Body(embed=False)],
 ):
     """Создание заявки"""
-    new_application = await Application.create(**application.model_dump())
-    result = {"id": new_application.id, 'create_at':str(new_application.created_at), **application.model_dump()}
-    await send_message("applications", result)
-
+    try:
+        new_application = await Application.create(**application.model_dump())
+        result = {"id": new_application.id, 'create_at':str(new_application.created_at), **application.model_dump()}
+        await send_message("applications", result)
+    except:
+        await send_message("logs", {
+            'level': "ERROR",
+            'messge': "Ошибка при создании заявки",
+            'data': application
+        })
     return {
         "message": "Заявка создана",
         "data": result,
