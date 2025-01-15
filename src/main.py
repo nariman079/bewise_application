@@ -2,23 +2,24 @@ import asyncio
 from typing import Callable, Awaitable, Annotated
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request, Response, Body, Depends
+from fastapi import FastAPI, Request, Response, Body, status, Query
 
 from src.conf.database import session_context, Base
 from src.conf.settings import async_session, DEBUG, engine
 from src.conf.producer import send_message, producer
+from src.models import Application
 from src.schemas import ApplicationCreateSchema, ApplicationDisplaySchema
-from src.depends import pagination_params
+
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    """ЖЦ приложения""" 
+    """ЖЦ приложения"""
     if DEBUG:
         # reinit database
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.drop_all)
             await conn.run_sync(Base.metadata.create_all)
-    
+
     for attempt in range(5):
         try:
             await producer.start()
@@ -27,15 +28,13 @@ async def lifespan(_: FastAPI):
             print(f"Ошибка при запуске продюсера: {e}")
             await asyncio.sleep(3)
     yield
-    await producer.close()
+    try:
+        await producer.close()
+    except AttributeError:
+        pass
 
 
 app = FastAPI(lifespan=lifespan)
-
-
-
-   
-    
 
 
 @app.middleware("http")
@@ -54,31 +53,38 @@ async def main():
     return {"message": "testKafka"}
 
 
-@app.post('/api/applications/', status_code=201)
+@app.post("/api/applications/", status_code=status.HTTP_201_CREATED)
 async def create_application(
-    application: Annotated[
-        ApplicationCreateSchema, 
-        Body(embed=False)
-    ] 
+    application: Annotated[ApplicationCreateSchema, Body(embed=False)],
 ):
+    new_application = await Application.create(**application.model_dump())
+
     return {
-        'message': "Заявка создана",
-        'data': {
-            'id': 1,
-            'user_name': 'testUser1',
-            'description': 'testDescription1'
-        }
+        "message": "Заявка создана",
+        "data": {"id": new_application.id, **application.model_dump()},
     }
 
-@app.get('/api/applications')
+
+@app.get("/api/applications")
 async def get_applications(
-    pagination_params: Annotated[pagination_params, Depends()] = None
+    user_name: str | None = Query(None, description="Фильтр по имени пользователя"),
+    page: int = Query(1, ge=1, description="Номер страницы"),
+    size: int = Query(10, ge=1, le=100, description="Количество элементов на странице"),
 ):
+    filter_by_user_name = {"user_name": user_name} if user_name else {}
+    applications = await Application.find_all_by_kwargs(**filter_by_user_name)
+
+    offset = (page - 1) * size
+    limit = size
+
     return {
-        'message': "Заявки получены",
-        'data': [{
-            'id': 1,
-            'user_name': 'testUser1',
-            'description': 'testDescription1'
-        }]
+        "message": "Заявки получены",
+        "data": [
+            ApplicationDisplaySchema(
+                id=application.id,
+                user_name=application.user_name,
+                description=application.description,
+            )
+            for application in applications[offset:limit]
+        ],
     }
