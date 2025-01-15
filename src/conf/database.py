@@ -35,6 +35,17 @@ db: DBController = DBController()
 
 class MappingBase:
     @classmethod
+    async def create(cls, **kwargs) -> Self:
+        entry = cls(**kwargs)
+        db.session.add(entry)
+        await db.session.flush()
+        return entry
+
+    @classmethod
+    async def find_all_by_kwargs(cls, *order_by: Any, **kwargs: Any) -> Sequence[Self]:
+        return await db.get_all(cls.select_by_kwargs(*order_by, **kwargs))
+
+    @classmethod
     def select_by_kwargs(cls, *order_by: Any, **kwargs: Any) -> Select[tuple[Self]]:
         if len(order_by) == 0:
             return select(cls).filter_by(**kwargs)

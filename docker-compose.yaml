@@ -20,14 +20,18 @@ services:
 
   app:
     build: .
+    volumes:
+      - './:/app'
     env_file:
       - .env
     command: sh -c "uvicorn src.main:app --reload  --host 0.0.0.0 --port 8000"
     ports:
       - "8000:8000"
     depends_on:
-      - migrations
-      - kafka
+      kafka:
+        condition: service_healthy
+      migrations:
+        condition: service_started
       
 
   zookeeper:
@@ -47,15 +51,12 @@ services:
       - "9092:9092"
     depends_on:
       - zookeeper
+    healthcheck:
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "localhost:9092", "--list"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
 
-  kafdrop:
-    image: obsidiandynamics/kafdrop
-    ports:
-      - "9000:9000"
-    env_file:
-      - .env
-    depends_on:
-      - kafka
 
 volumes:
   pg-data:
