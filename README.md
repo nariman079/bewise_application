@@ -54,4 +54,61 @@
     ```bash
     docker compose up --build
     ```
+### Административная панель для Kafka (Kafdrop)
+ `http://localhost:9000`
+### Документация FastAPI
+`http://localhost:8000/docs`
 
+# Документация к API
+
+## Создание заявки
+### `POST` /api/applications/
+#### Request Data
+```json
+{
+    "user_name": "UserName",
+    "description": "Description ",
+}
+```
+#### Responses
+#### 201
+```json
+{
+    "message": "Заявка создана",
+    "data":  {
+        "id": 1,
+        "user_name": "UserName",
+        "description": "Description"
+    }
+}
+```
+
+## Получение заявок
+### `GET` /api/applications/
+#### Request query params
+```json
+{
+    "page": 1,
+    "size": 20,
+    "user_name": null
+}
+```
+#### Responses
+#### 200
+```json
+{
+    "message": "Заявки получены",
+    "data":  [
+        {
+            "id": 1,
+            "user_name": "UserName",
+            "description": "Description"
+        },
+        {
+            "id": 2,
+            "user_name": "UserName2",
+            "description": "Description2"
+        }
+    ]
+}
+```
