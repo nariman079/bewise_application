@@ -54,7 +54,10 @@
     ```bash
     docker compose up --build
     ```
-
+### Административная панель для Kafka (Kafdrop)
+ `http://localhost:9000`
+### Документация FastAPI
+`http://localhost:8000/docs`
 
 # Документация к API
 
