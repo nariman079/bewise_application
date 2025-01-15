@@ -2,6 +2,7 @@ import asyncio
 from typing import Callable, Awaitable, Annotated
 from contextlib import asynccontextmanager
 
+
 from fastapi import FastAPI, Request, Response, Body, status, Query
 
 from src.conf.database import session_context, Base
@@ -46,22 +47,27 @@ async def database_session_context_middleware(
         session_context.set(session)
         return await call_next(request)
 
-
-@app.get("/")
-async def main():
-    await send_message("test", b"test message")
-    return {"message": "testKafka"}
-
-
 @app.post("/api/applications/", status_code=status.HTTP_201_CREATED)
 async def create_application(
     application: Annotated[ApplicationCreateSchema, Body(embed=False)],
 ):
-    new_application = await Application.create(**application.model_dump())
-
+    """Создание заявки"""
+    try:
+        new_application = await Application.create(**application.model_dump())
+        result = {"id": new_application.id, 'create_at':str(new_application.created_at), **application.model_dump()}
+        await send_message("applications", result)
+    except:
+        await send_message("logs", {
+            'level': "ERROR",
+            'messge': "Error by creating application",
+            'data': application
+        })
+        return {
+            'message': "Ошибка при создании заявки"
+        }
     return {
         "message": "Заявка создана",
-        "data": {"id": new_application.id, **application.model_dump()},
+        "data": result,
     }
 
 
@@ -71,12 +77,16 @@ async def get_applications(
     page: int = Query(1, ge=1, description="Номер страницы"),
     size: int = Query(10, ge=1, le=100, description="Количество элементов на странице"),
 ):
+    """Получение заявок"""
     filter_by_user_name = {"user_name": user_name} if user_name else {}
     applications = await Application.find_all_by_kwargs(**filter_by_user_name)
 
     offset = (page - 1) * size
     limit = size
-
+    await send_message("logs", {
+            'level': "INFO",
+            'messge': "Getting applications",
+        })
     return {
         "message": "Заявки получены",
         "data": [
