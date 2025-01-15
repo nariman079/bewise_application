@@ -34,6 +34,8 @@
 2. Создайте `.env` в корне проекта и заполните его переменными окружения:
 
     ```env
+    DEBUG=1
+
     POSTGRES_USER=bewise_user
     POSTGRES_PASSWORD=bewise_password
     POSTGRES_DB=bewise_application_db
@@ -45,8 +47,10 @@
 
     KAFKA_BROKER_ID=1
     KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
-    KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+    KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+    KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092
     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+    KAFKA_BROKERCONNECT=kafka:9092
     ```
 
 3. Запустите проект с помощью Docker Compose:
