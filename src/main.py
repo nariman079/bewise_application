@@ -2,6 +2,7 @@ import asyncio
 from typing import Callable, Awaitable, Annotated
 from contextlib import asynccontextmanager
 
+
 from fastapi import FastAPI, Request, Response, Body, status, Query
 
 from src.conf.database import session_context, Base
@@ -57,11 +58,14 @@ async def main():
 async def create_application(
     application: Annotated[ApplicationCreateSchema, Body(embed=False)],
 ):
+    """Создание заявки"""
     new_application = await Application.create(**application.model_dump())
+    result = {"id": new_application.id, 'create_at':str(new_application.created_at), **application.model_dump()}
+    await send_message("applications", result)
 
     return {
         "message": "Заявка создана",
-        "data": {"id": new_application.id, **application.model_dump()},
+        "data": result,
     }
 
 
@@ -71,6 +75,7 @@ async def get_applications(
     page: int = Query(1, ge=1, description="Номер страницы"),
     size: int = Query(10, ge=1, le=100, description="Количество элементов на странице"),
 ):
+    """Получение заявок"""
     filter_by_user_name = {"user_name": user_name} if user_name else {}
     applications = await Application.find_all_by_kwargs(**filter_by_user_name)
 
