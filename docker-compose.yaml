@@ -57,6 +57,15 @@ services:
       timeout: 10s
       retries: 5
 
+  kafdrop:
+    image: obsidiandynamics/kafdrop
+    ports:
+      - "9000:9000"
+    env_file:
+      - .env
+    depends_on:
+      kafka:
+        condition: service_healthy
 
 volumes:
   pg-data:
