@@ -4,6 +4,8 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 load_dotenv(override=True)
 
+DEBUG = getenv("DEBUG") == "1"
+
 POSTGRES_USER = getenv("POSTGRES_USER")
 POSTGRES_PASSWORD = getenv("POSTGRES_PASSWORD")
 POSTGRES_DB = getenv("POSTGRES_DB")
