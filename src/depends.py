@@ -1,5 +1,10 @@
+from typing import Annotated
+
+from fastapi import Query
+
+
 def pagination_params(
-    page: int = Query(1, ge=1, description="Номер страницы"),
-    size: int = Query(10, ge=1, le=100, description="Количество элементов на странице")
-    ):
-    return {"page": page, "size": size}
+    limit: Annotated[int, Query(gt=1)] = 24 ,
+    offset: Annotated[int, Query(gt=1)] = 1 
+    ) -> dict:
+    return {"limit": limit, "offset": offset}

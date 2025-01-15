@@ -47,8 +47,45 @@ async def test_get_application(client, application_data):
 
 @pytest.mark.asyncio
 async def test_get_application_by_user_name(client):
-    pass
+    response = assert_response(
+        client.get(
+            '/api/applications',
+            params={
+                'user_name':"testUser1"
+            }
+        ),
+        expected_code=200,
+    )
+
+    for application in response.json()['data']:
+        assert application['user_name'] == "testUser1", application
+
 
 @pytest.mark.asyncio
+async def test_get_application_by_user_name_empty(client):
+    response = assert_response(
+        client.get(
+            '/api/applications',
+            params={
+                'user_name':"testUser2"
+            }
+        ),
+        expected_code=200,
+        expected_data={
+            'data':[]
+        }
+    )
+
+  
+@pytest.mark.asyncio
 async def test_get_pagindated_application():
-    pass
+    response = assert_response(
+        client.get(
+            '/api/applications',
+            params={
+                'offset': 1,
+                'limit': 10
+            }
+        ),
+        expected_code=200,
+    )

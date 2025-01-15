@@ -72,8 +72,7 @@ async def create_application(
 
 @app.get('/api/applications')
 async def get_applications(
-    pagination_params: Annotated[pagination_params, Depends()] 
-    # TODO Зввршить пагинацию
+    pagination_params: Annotated[pagination_params, Depends()] = None
 ):
     return {
         'message': "Заявки получены",
