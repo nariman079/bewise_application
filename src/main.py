@@ -47,13 +47,6 @@ async def database_session_context_middleware(
         session_context.set(session)
         return await call_next(request)
 
-
-@app.get("/")
-async def main():
-    await send_message("test", b"test message")
-    return {"message": "testKafka"}
-
-
 @app.post("/api/applications/", status_code=status.HTTP_201_CREATED)
 async def create_application(
     application: Annotated[ApplicationCreateSchema, Body(embed=False)],
@@ -66,9 +59,12 @@ async def create_application(
     except:
         await send_message("logs", {
             'level': "ERROR",
-            'messge': "Ошибка при создании заявки",
+            'messge': "Error by creating application",
             'data': application
         })
+        return {
+            'message': "Ошибка при создании заявки"
+        }
     return {
         "message": "Заявка создана",
         "data": result,
@@ -87,7 +83,10 @@ async def get_applications(
 
     offset = (page - 1) * size
     limit = size
-
+    await send_message("logs", {
+            'level': "INFO",
+            'messge': "Getting applications",
+        })
     return {
         "message": "Заявки получены",
         "data": [
